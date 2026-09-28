@@ -1,0 +1,64 @@
+{
+  "upstreams": [
+    {
+      "id": "svc-a",
+      "base_url": "http://127.0.0.1:9101",
+      "probe_path": "/health",
+      "probe_interval": 1.0,
+      "failure_threshold": 3,
+      "recover_successes": 2
+    },
+    {
+      "id": "svc-b",
+      "base_url": "http://127.0.0.1:9102",
+      "probe_path": "/health",
+      "probe_interval": 1.0,
+      "failure_threshold": 3,
+      "recover_successes": 2
+    }
+  ],
+  "routes": [
+    {
+      "id": "orders",
+      "prefix": "/orders",
+      "upstream_ids": [
+        "svc-a",
+        "svc-b"
+      ],
+      "timeout": 3.0,
+      "strip_prefix": true,
+      "retry": {
+        "max_attempts": 3,
+        "base_delay": 0.1,
+        "max_delay": 1.0,
+        "jitter": 0.2,
+        "retry_post": false
+      },
+      "circuit": {
+        "failure_threshold": 5,
+        "open_cooldown": 2.0,
+        "half_open_max_probes": 1,
+        "half_open_successes": 1
+      }
+    },
+    {
+      "id": "users",
+      "prefix": "/users",
+      "upstream_ids": [
+        "svc-a",
+        "svc-b"
+      ],
+      "timeout": 2.0,
+      "strip_prefix": true,
+      "retry": {
+        "max_attempts": 2,
+        "base_delay": 0.05,
+        "jitter": 0.1
+      },
+      "circuit": {
+        "failure_threshold": 3,
+        "open_cooldown": 1.0
+      }
+    }
+  ]
+}
